@@ -1,9 +1,12 @@
 package it.polito.tdp.seriea;
 
 import java.net.URL;
+import java.util.List;
 import java.util.ResourceBundle;
 
 import it.polito.tdp.seriea.model.Model;
+import it.polito.tdp.seriea.model.PuntiStagione;
+import it.polito.tdp.seriea.model.Team;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -21,7 +24,7 @@ public class FXMLController {
     private URL location;
 
     @FXML
-    private ChoiceBox<?> boxSquadra;
+    private ChoiceBox<Team> boxSquadra;
 
     @FXML
     private Button btnSelezionaSquadra;
@@ -37,17 +40,40 @@ public class FXMLController {
 
     @FXML
     void doSelezionaSquadra(ActionEvent event) {
-
+    	txtResult.clear();
+    	Team t = boxSquadra.getValue();
+    	if(t == null) {
+    		txtResult.appendText("Devi selezionare un team!\n");
+    		return;
+    	}
+    	for(PuntiStagione p: model.getpuntiStagione(t))
+    		txtResult.appendText(String.format("%s %d \n", p.getS(), p.getPunti()));
     }
 
     @FXML
     void doTrovaAnnataOro(ActionEvent event) {
-
+    	txtResult.clear();
+    	Team t = boxSquadra.getValue();
+    	if(t == null) {
+    		txtResult.appendText("Devi selezionare un team!\n");
+    		return;
+    	}
+    	model.creaGrafo(t);
+    	txtResult.appendText("Grafo creato con "+model.nVertici()+" vertici e "+model.nArchi()+"!\n");
+    	PuntiStagione p = model.getAnnataDoro();
+    	if(p == null) {
+    		txtResult.appendText("errore");
+    		return;
+    	}
+    	txtResult.appendText(String.format("%s %d\n", p.getS(), p.getPunti()));
     }
 
     @FXML
     void doTrovaCamminoVirtuoso(ActionEvent event) {
-
+    	txtResult.clear();
+    	List<PuntiStagione> result = model.trovPercorso();
+    	for(PuntiStagione p: result)
+    		txtResult.appendText(String.format("%s %d \n", p.getS(), p.getPunti()));
     }
 
     @FXML
@@ -62,5 +88,10 @@ public class FXMLController {
 
 	public void setModel(Model model) {
 		this.model = model;
+		setBox();
+	}
+
+	private void setBox() {
+		this.boxSquadra.getItems().addAll(model.getTeams());
 	}
 }
